@@ -1082,7 +1082,7 @@ async function savePlayers(){
 /* ══════════════════════════════════════
    HELPERS
 ══════════════════════════════════════ */
-function show(id){const e=document.getElementById(id);if(e)e.style.display=(id==='app'?'block':id==='auth-screen'?'flex':id==='player-select-modal'?'flex':'')}
+function show(id){const e=document.getElementById(id);if(e)e.style.display=(id==='app'||id==='players-card'||id==='timer-wrap'||id==='btn-save'?'block':id==='auth-screen'||id==='player-select-modal'||id==='modal'?'flex':id==='time-alert'?'flex':'block')}
 function hide(id){const e=document.getElementById(id);if(e)e.style.display='none'}
 function val(id){return(document.getElementById(id)||{}).value?.trim()||''}
 function showModal(html){document.getElementById('modal-body').innerHTML=html;show('modal')}
