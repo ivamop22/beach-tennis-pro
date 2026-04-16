@@ -3,178 +3,312 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arena GWM · Torneio de Beach Tennis</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&family=Anton&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <title>BeachTennis Pro · Arena de Verão</title>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Poppins:wght@400;600;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
-            --bg-dark: #0A0F0A; 
-            --green-bt: #63E678; 
-            --gold-arena: #E5C163; 
+            /* NOVA PALETA PRAIANA */
+            --sand-light: #F2E0BD; /* Areia Seca - Fundo */
+            --ocean-blue: #00C2CB; /* Turquesa - Detalhes/Ícones */
+            --sunset-orange: #FF6B35; /* Laranja Energético - CTAs */
+            --deep-sea: #004E64; /* Marinho Profundo - Textos Base */
             --white: #FFFFFF;
-            --card-bg: rgba(255, 255, 255, 0.05);
+            --ink: #001A23; /* Quase preto para títulos fortes */
+            
+            /* Estilos de Card Modernos */
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --card-shadow: 0 8px 30px rgba(0, 78, 100, 0.1);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
             font-family: 'Poppins', sans-serif;
-            background-color: var(--bg-dark);
-            color: var(--white);
+            background-color: var(--sand-light);
+            color: var(--deep-sea);
             min-height: 100vh;
-            padding-bottom: 90px;
+            padding-bottom: 90px; /* Espaço para nav fixa maior */
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* HEADER ARENA GWM */
+        /* Textura de Fundo (Leve grão de areia) */
+        body::before {
+            content: ''; position: fixed; inset: 0;
+            background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="4" height="4" viewBox="0 0 4 4"%3E%3Cpath fill="%23dcc499" fill-opacity="0.3" d="M1 3h1v1H1V3zm2-2h1v1H3V1z"%3E%3C/path%3E%3C/svg%3E');
+            z-index: -1;
+        }
+
+        /* Header Praiano */
         .topbar {
-            padding: 25px 20px;
-            background: linear-gradient(to bottom, #0D140D, #0A0F0A);
-            border-bottom: 1px solid rgba(99, 230, 120, 0.1);
+            padding: 20px;
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
+            align-items: center;
+            background: var(--white);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            position: sticky; top: 0; z-index: 100;
         }
 
-        .header-main { display: flex; flex-direction: column; }
+        .topbar-logo { 
+            font-family: 'Anton', sans-serif; 
+            font-size: 26px; 
+            letter-spacing: 1px; 
+            color: var(--deep-sea);
+            text-transform: uppercase;
+        }
+        .topbar-logo span { color: var(--ocean-blue); }
 
-        .title-top {
+        .btn-logout {
+            background: rgba(255, 107, 53, 0.1);
+            color: var(--sunset-orange);
+            border: 1px solid rgba(255, 107, 53, 0.3);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 11px;
             font-weight: 800;
-            font-size: 24px;
-            line-height: 1.1;
-        }
-        .title-top span { color: var(--green-bt); }
-
-        .arena-name {
-            font-weight: 700;
-            color: var(--gold-arena);
-            font-size: 15px;
-            margin-top: 4px;
-            letter-spacing: 1px;
+            cursor: pointer;
             text-transform: uppercase;
         }
 
-        .slogan {
-            font-size: 10px;
-            color: rgba(255,255,255,0.4);
-            margin-top: 8px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        /* CARDS E PLACAR */
+        /* Cartões de Partida (Game Cards) Modernos */
         .game-card {
             background: var(--card-bg);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 20px;
+            border-radius: 24px;
             margin: 15px;
-            backdrop-filter: blur(10px);
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            border: 1px solid rgba(255,255,255,0.5);
+            backdrop-filter: blur(5px);
+            transition: transform 0.2s ease;
         }
 
+        .game-card:hover { transform: translateY(-3px); }
+
         .game-header {
-            padding: 10px 15px;
-            background: rgba(255,255,255,0.03);
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 11px;
+            background: rgba(0, 194, 203, 0.08); /* Tom leve de Turquesa */
+            padding: 10px 18px;
             display: flex;
             justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(0, 194, 203, 0.15);
         }
+
+        .game-num {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--deep-sea);
+            font-weight: 800;
+        }
+
+        .game-status-badge {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            padding: 4px 10px;
+            border-radius: 20px;
+            letter-spacing: 1px;
+        }
+        .status-aguardando { background: #E0E7FF; color: #4F46E5; }
+        .status-andamento { background: #FFEDD5; color: #EA580C; }
+        .status-concluido { background: #D1FAE5; color: #059669; }
 
         .game-body {
             display: grid;
             grid-template-columns: 1fr auto 1fr;
             align-items: center;
-            padding: 20px 10px;
+            padding: 25px 15px;
             text-align: center;
         }
 
-        .team-names { font-weight: 600; font-size: 14px; }
-        .p-code { color: var(--green-bt); font-size: 10px; display: block; }
+        .team-names { 
+            font-weight: 700; 
+            font-size: 15px; 
+            color: var(--ink);
+            line-height: 1.4;
+        }
+        .p-code { 
+            color: var(--ocean-blue); 
+            font-size: 11px; 
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 500;
+            display: block; 
+            margin-bottom: 2px;
+        }
 
-        .score-area { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        /* Placar de Arena Central */
+        .score-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            padding: 0 10px;
+            min-width: 100px;
+        }
+
         .score-display {
             font-family: 'Anton', sans-serif;
-            font-size: 42px;
+            font-size: 52px;
+            line-height: 1;
             color: var(--white);
-            background: #152015;
-            padding: 5px 15px;
-            border-radius: 10px;
-            border: 1px solid var(--green-bt);
-            min-width: 90px;
+            background: var(--deep-sea);
+            padding: 10px 20px;
+            border-radius: 12px;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 0px rgba(0,0,0,0.2);
+            position: relative;
         }
+        
+        .score-display::before {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+            border-radius: 12px;
+        }
+
+        .score-ctrls { display: flex; gap: 20px; }
+        .ctrl-group { display: flex; flex-direction: column; align-items: center; gap: 6px; }
 
         .btn-score {
-            width: 38px; height: 38px;
-            border-radius: 50%; border: 1px solid rgba(255,255,255,0.2);
-            background: rgba(255,255,255,0.05);
-            color: white; font-size: 20px; cursor: pointer;
+            width: 42px; height: 42px;
+            border-radius: 50%; 
+            border: 2px solid var(--ocean-blue);
+            background: var(--white);
+            color: var(--ocean-blue); 
+            font-size: 24px; 
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 10px rgba(0, 194, 203, 0.15);
         }
 
-        .btn-score:active { background: var(--green-bt); color: var(--bg-dark); }
+        .btn-score:active { 
+            background: var(--ocean-blue); 
+            color: var(--white);
+            transform: scale(0.95);
+        }
 
-        /* NAV E ACTIONS */
+        /* Navigation Mobile Fixa Estilo "Island" */
         .nav {
             position: fixed; bottom: 15px; left: 15px; right: 15px;
-            background: rgba(20, 30, 20, 0.95);
+            background: rgba(0, 78, 100, 0.95); /* Deep Sea com transparência */
             display: flex; justify-content: space-around;
-            padding: 12px; border-radius: 20px;
-            backdrop-filter: blur(10px); border: 1px solid rgba(99, 230, 120, 0.2);
+            padding: 15px; 
+            border-radius: 25px;
+            backdrop-filter: blur(15px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
         }
 
         .nav-btn {
-            background: none; border: none; color: rgba(255,255,255,0.4);
-            font-size: 10px; cursor: pointer; display: flex; flex-direction: column; align-items: center;
-            font-weight: 600;
-        }
-        .nav-btn.active { color: var(--green-bt); }
-        .nav-btn span { font-size: 22px; margin-bottom: 2px; }
-
-        .btn-action {
-            background: var(--green-bt); color: var(--bg-dark);
-            padding: 18px; border-radius: 15px; border: none;
-            width: calc(100% - 30px); margin: 15px;
-            font-weight: 800; text-transform: uppercase; cursor: pointer;
-            box-shadow: 0 4px 15px rgba(99, 230, 120, 0.2);
+            background: none; border: none; color: rgba(255,255,255,0.6);
+            font-size: 11px; font-weight: 700; cursor: pointer;
+            display: flex; flex-direction: column; align-items: center; gap: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        .stats-card { background: var(--card-bg); margin: 15px; padding: 20px; border-radius: 20px; }
-        .stats-table { width: 100%; border-collapse: collapse; }
-        .stats-table th { text-align: left; font-size: 11px; color: var(--green-bt); padding: 10px; }
-        .stats-table td { padding: 14px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .nav-btn.active { color: var(--white); }
+        .nav-btn span { font-size: 22px; margin-bottom: 2px;}
+        .nav-btn.active span { color: var(--sunset-orange); } /* Laranja no ícone ativo */
 
-        .page { display: none; animation: fadeIn 0.3s; }
+        /* Seção de Ranking Refinada */
+        .stats-card {
+            background: var(--white);
+            border-radius: 24px;
+            padding: 25px;
+            margin: 15px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .rank-title { 
+            font-family: 'Anton', sans-serif; 
+            color: var(--deep-sea); 
+            text-transform: uppercase;
+            font-size: 24px;
+            margin-bottom: 20px; 
+            display: flex; align-items: center; gap: 10px;
+        }
+
+        .stats-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        
+        .stats-table th { 
+            text-align: left; padding: 12px 10px; 
+            color: rgba(0, 78, 100, 0.6); 
+            font-size: 11px; 
+            text-transform: uppercase;
+            font-weight: 800;
+            letter-spacing: 1px;
+            border-bottom: 2px solid var(--sand-light);
+        }
+        
+        .stats-table td { 
+            padding: 16px 10px; 
+            border-bottom: 1px solid rgba(0,0,0,0.03); 
+            font-size: 14px; 
+            color: var(--ink);
+        }
+
+        .stats-table tr:last-child td { border-bottom: none; }
+        
+        .td-name { font-weight: 700; color: var(--deep-sea); }
+        .td-points { font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 15px;}
+
+        /* Botão Salvar Estilo "Sunset CTA" */
+        .btn-save-round {
+            background: var(--sunset-orange);
+            color: var(--white);
+            padding: 18px; 
+            border-radius: 18px; 
+            border: none;
+            width: calc(100% - 30px); 
+            margin: 20px 15px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 800; 
+            font-size: 15px;
+            text-transform: uppercase; 
+            letter-spacing: 1px;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(255, 107, 53, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .btn-save-round:hover {
+            box-shadow: 0 8px 25px rgba(255, 107, 53, 0.4);
+            transform: translateY(-2px);
+        }
+
+        /* Animações de Página */
+        .page { display: none; padding: 10px; animation: slideUp 0.4s ease-out; }
         .page.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { 
+            from { opacity: 0; transform: translateY(15px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
     </style>
 </head>
 <body>
 
 <div id="app">
     <header class="topbar">
-        <div class="header-main">
-            <div class="title-top">Torneio de <span>Beach Tennis</span></div>
-            <div class="arena-name">Arena GWM</div>
-            <div class="slogan">⚡ Sistema de Chaveamento Inteligente</div>
-        </div>
-        <button onclick="doLogout()" style="background:none; border:none; color:var(--green-bt); font-size:11px; font-weight:700;">SAIR</button>
+        <div class="topbar-logo">BEACH<span>TENNIS</span> PRO</div>
+        <button class="btn-logout" onclick="doLogout()">Sair</button>
     </header>
 
     <div id="page-bracket" class="page active">
         <div id="games-list"></div>
-        <button class="btn-action" onclick="saveTournament()">💾 Salvar na Arena GWM</button>
+        <button class="btn-save-round" onclick="saveTournament()">💾 Salvar Rodada no Histórico</button>
     </div>
 
     <div id="page-ranking" class="page">
         <div class="stats-card">
-            <h2 style="font-family:'Anton'; margin-bottom:15px; letter-spacing:1px; color:var(--gold-arena);">🏆 CLASSIFICAÇÃO</h2>
-            <table class="stats-table">
+            <h2 class="rank-title">🏆 Classificação Arena</h2>
+            <table class="stats-table" id="ranking-table">
                 <thead>
                     <tr>
-                        <th>JOGADOR</th>
-                        <th>VIT</th>
-                        <th>SG</th>
-                        <th>%</th>
+                        <th>Jogador</th>
+                        <th>Vitórias</th>
+                        <th>Saldo Games</th>
+                        <th>Aproveitamento</th>
                     </tr>
                 </thead>
                 <tbody id="ranking-body"></tbody>
@@ -183,54 +317,66 @@
     </div>
 
     <nav class="nav">
-        <button class="nav-btn active" onclick="goPage('bracket', this)"><span>🎾</span>JOGOS</button>
-        <button class="nav-btn" onclick="goPage('ranking', this)"><span>🏆</span>RANKING</button>
-        <button class="nav-btn" onclick="location.reload()"><span>🔄</span>LIMPAR</button>
+        <button class="nav-btn active" onclick="goPage('bracket', this)"><span>🎾</span>Jogos</button>
+        <button class="nav-btn" onclick="goPage('ranking', this)"><span>🏆</span>Ranking</button>
+        <button class="nav-btn" onclick="location.reload()"><span>🔄</span>Novo</button>
     </nav>
 </div>
 
 <script>
-    // CREDENCIAIS SUPABASE ARENA GWM
+    // Configurações do Supabase (Mantenha suas chaves reais aqui)
     const SUPABASE_URL = 'https://mxjnydrllpxqwmfwzlsr.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im14am55ZHJsbHB4cXdtZnd6bHNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNzYxNTcsImV4cCI6MjA5MTg1MjE1N30.eBjZuqVcEFnW4CZJQxvkPoaYH6vzoRdzcTTapoB21Cs'; 
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'; 
     const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // Dados Iniciais (Exemplo)
+    // Estado Local Simulidado (Dados de exemplo para renderização imediata)
     let ST = {
         players: [
-            { id: 1, nome: "Leonardo" },
-            { id: 2, nome: "Gilvan" },
-            { id: 3, nome: "Marcelo" },
-            { id: 4, nome: "Rodrigo" }
+            { id: 1, nome: "Guga", sobrenome: "Kuerten" },
+            { id: 2, nome: "Rafa", sobrenome: "Nadal" },
+            { id: 3, nome: "Bia", sobrenome: "Haddad" },
+            { id: 4, nome: "Laura", sobrenome: "Pigossi" }
         ],
         games: [
-            { id: 1, teams: [[1, 2], [3, 4]], score: [0, 0], status: 'aguardando' }
+            { id: 1, teams: [[1, 2], [3, 4]], score: [0, 0], status: 'aguardando' },
+            { id: 2, teams: [[1, 3], [2, 4]], score: [0, 0], status: 'aguardando' }
         ]
     };
 
-    function goPage(p, btn) {
-        document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
-        document.querySelectorAll('.nav-btn').forEach(x => x.classList.remove('active'));
-        document.getElementById('page-' + p).classList.add('active');
+    // Navegação entre páginas
+    function goPage(pageId, btn) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('page-' + pageId).classList.add('active');
         btn.classList.add('active');
-        if(p === 'ranking') renderRanking();
+        if(pageId === 'ranking') updateRanking();
     }
 
+    // Renderização dos Cards de Jogo
     function renderGames() {
         const list = document.getElementById('games-list');
         list.innerHTML = ST.games.map(g => `
             <div class="game-card">
-                <div class="game-header">PARTIDA #${g.id} <span style="color:var(--green-bt)">${g.status.toUpperCase()}</span></div>
+                <div class="game-header">
+                    <span class="game-num">PARTIDA #${g.id}</span>
+                    <span class="game-status-badge status-${g.status}">${sLbl(g.status)}</span>
+                </div>
                 <div class="game-body">
                     <div class="team-names">
                         <span class="p-code">J${g.teams[0][0]}</span> ${getName(g.teams[0][0])}<br>
                         <span class="p-code">J${g.teams[0][1]}</span> ${getName(g.teams[0][1])}
                     </div>
                     <div class="score-area">
-                        <div class="score-display">${g.score[0]}:${g.score[1]}</div>
-                        <div style="display:flex; gap:12px;">
-                            <button class="btn-score" onclick="adj(${g.id},0,1)">+</button>
-                            <button class="btn-score" onclick="adj(${g.id},1,1)">+</button>
+                        <div class="score-display">${g.score[0]}<span style="opacity:0.2; font-family:sans-serif; font-size:30px;">:</span>${g.score[1]}</div>
+                        <div class="score-ctrls">
+                            <div class="ctrl-group">
+                                <button class="btn-score" onclick="adj(${g.id}, 0, 1)">+</button>
+                                <button class="btn-score" onclick="adj(${g.id}, 0, -1)">-</button>
+                            </div>
+                            <div class="ctrl-group">
+                                <button class="btn-score" onclick="adj(${g.id}, 1, 1)">+</button>
+                                <button class="btn-score" onclick="adj(${g.id}, 1, -1)">-</button>
+                            </div>
                         </div>
                     </div>
                     <div class="team-names">
@@ -242,66 +388,84 @@
         `).join('');
     }
 
-    function getName(id) { return ST.players.find(p => p.id === id)?.nome || 'J'; }
+    // Auxiliares de renderização
+    function getName(id) { const p = ST.players.find(x => x.id === id); return p ? p.nome : 'N/A'; }
+    function sLbl(s) { return {aguardando:'Aguardando',andamento:'Em Jogo',concluido:'Finalizado'}[s]||s; }
 
-    function adj(gid, tIdx, d) {
-        const g = ST.games.find(x => x.id === gid);
-        if(!g) return;
-        g.score[tIdx] = Math.max(0, g.score[tIdx] + d);
-        if (g.score[0] === 0 && g.score[1] === 0) g.status = 'aguardando';
-        else if (g.score[0] >= 6 || g.score[1] >= 6) g.status = 'concluido';
-        else g.status = 'andamento';
+    // Função de Ajuste do Placar (Lógica funcional)
+    function adj(gameId, teamIdx, delta) {
+        const game = ST.games.find(g => g.id === gameId);
+        if (!game) return;
+
+        let newVal = game.score[teamIdx] + delta;
+        if (newVal < 0 || newVal > 6) return; // Limite padrão de sets BT
+
+        game.score[teamIdx] = newVal;
+        
+        // Atualização automática do status
+        if (game.score[0] === 0 && game.score[1] === 0) game.status = 'aguardando';
+        else if (game.score[0] === 6 || game.score[1] === 6) game.status = 'concluido';
+        else game.status = 'andamento';
+        
         renderGames();
     }
 
-    function renderRanking() {
+    // Lógica e Renderização do Ranking
+    function updateRanking() {
         let stats = {};
-        ST.players.forEach(p => stats[p.id] = { nome: p.nome, v: 0, sg: 0, j: 0 });
+        ST.players.forEach(p => stats[p.id] = { nome: p.nome, sobrenome: p.sobrenome, v: 0, saldo: 0, jogos: 0 });
+
         ST.games.forEach(g => {
-            if(g.status === 'concluido') {
-                const w = g.score[0] > g.score[1] ? 0 : 1;
-                const diff = Math.abs(g.score[0] - g.score[1]);
-                g.teams[w].forEach(id => { stats[id].v++; stats[id].sg += diff; stats[id].j++; });
-                g.teams[1-w].forEach(id => { stats[id].sg -= diff; stats[id].j++; });
+            if (g.status === 'concluido') {
+                const winIdx = g.score[0] > g.score[1] ? 0 : 1;
+                const saldo = Math.abs(g.score[0] - g.score[1]);
+                
+                g.teams[winIdx].forEach(pid => { stats[pid].v++; stats[pid].saldo += saldo; stats[pid].jogos++; });
+                g.teams[1 - winIdx].forEach(pid => { stats[pid].saldo -= saldo; stats[pid].jogos++; });
             }
         });
-        const sorted = Object.values(stats).sort((a,b) => b.v - a.v || b.sg - a.sg);
+
+        const sorted = Object.values(stats).sort((a, b) => b.v - a.v || b.saldo - a.saldo);
+        
         document.getElementById('ranking-body').innerHTML = sorted.map(s => `
             <tr>
-                <td><b>${s.nome}</b></td>
-                <td>${s.v}</td>
-                <td style="color:${s.sg>=0?'var(--green-bt)':'#ff5f40'}">${s.sg}</td>
-                <td>${s.j > 0 ? Math.round((s.v/s.j)*100) : 0}%</td>
+                <td class="td-name">${s.nome} <span style="font-weight:400; opacity:0.6;">${s.sobrenome.charAt(0)}.</span></td>
+                <td class="td-points" style="color:var(--deep-sea);">${s.v} V</td>
+                <td class="td-points" style="color:${s.saldo >= 0 ? 'var(--ocean-blue)' : 'var(--sunset-orange)'}">${s.saldo >= 0 ? '+' : ''}${s.saldo} G</td>
+                <td style="font-weight:600; font-size:13px;">${s.jogos > 0 ? Math.round((s.v / s.jogos) * 100) : 0}%</td>
             </tr>
         `).join('');
     }
 
+    // Salvamento no Histórico do Supabase
     async function saveTournament() {
-        // Tenta pegar o usuário logado para associar o ID
+        // Verifica se há sessão ativa (simulação básica, adapte para sua lógica real de login)
         const { data: { user } } = await sb.auth.getUser();
-        
-        const payload = { 
-            resultado_json: ST,
-            data_torneio: new Date().toISOString()
-        };
+        if(!user) return alert("Houve um problema de autenticação. Tente fazer login novamente.");
 
-        if(user) payload.user_id = user.id;
+        // Estrutura do payload para a tabela histórico_torneios
+        const payload = {
+            user_id: user.id, // Chave estrangeira para auth.users
+            data_torneio: new Date().toISOString(),
+            resultado_json: ST // Objeto ST completo salvo como JSON
+        };
 
         const { error } = await sb.from('historico_torneios').insert([payload]);
         
-        if(error) {
-            console.error(error);
-            alert("Erro ao salvar: Verifique se a tabela 'historico_torneios' existe no Supabase.");
+        if (error) {
+            console.error("Erro Supabase:", error);
+            alert("❌ Falha ao salvar no banco: " + error.message);
         } else {
-            alert("✅ Torneio da Arena GWM salvo com sucesso!");
+            alert("✅ Rodada finalizada e salva com sucesso no seu Histórico!");
         }
     }
 
-    function doLogout() {
-        sb.auth.signOut().then(() => location.reload());
-    }
+    // Função de Logout Mock (Substitua por sb.auth.signOut real)
+    function doLogout() { alert("Simulação de Logout. Integrar com sb.auth.signOut()."); }
 
+    // Inicialização da tela
     renderGames();
 </script>
+
 </body>
 </html>
