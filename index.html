@@ -16,7 +16,7 @@
   --gbb:rgba(255,255,255,0.15);--sh:rgba(10,22,40,0.4);
 }
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'DM Sans',sans-serif;background:var(--ocean);color:var(--white);min-height:100vh;overflow-x:hidden}
+body{font-family:'DM Sans',sans-serif;background:var(--ocean);color:var(--white);min-height:100vh;overflow-x:hidden;overflow-y:auto}
 body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 0%,rgba(26,157,199,.3) 0%,transparent 50%),radial-gradient(ellipse at 80% 100%,rgba(255,95,64,.15) 0%,transparent 50%),linear-gradient(160deg,#0A1628 0%,#0A4F6E 50%,#0D3D54 100%);z-index:-1}
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--ocean-light);border-radius:2px}
  
@@ -312,7 +312,8 @@ const MAX_SEC=7200, VALID_N=[6,8,9,10,11,12];
 /* ══════════════════════════════════════
    AUTH
 ══════════════════════════════════════ */
-sb.auth.onAuthStateChange(async (event, session) => {
+ 
+function initApp(session) {
   hide('loading');
   if (session?.user) {
     currentUser = session.user;
@@ -325,13 +326,32 @@ sb.auth.onAuthStateChange(async (event, session) => {
     currentUser = null;
     hide('app'); show('auth-screen');
   }
-});
+}
  
-// Verificar sessão existente
+// Timeout de segurança — se Supabase demorar >5s, mostra tela de login
+const _authTimeout = setTimeout(() => {
+  hide('loading'); show('auth-screen');
+}, 5000);
+ 
+// Verificar sessão imediatamente (mais rápido que onAuthStateChange)
 (async () => {
-  const { data: { session } } = await sb.auth.getSession();
-  if (!session) { hide('loading'); show('auth-screen'); }
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    clearTimeout(_authTimeout);
+    initApp(session);
+  } catch(e) {
+    clearTimeout(_authTimeout);
+    hide('loading'); show('auth-screen');
+  }
 })();
+ 
+// Listener para mudanças de auth (login/logout)
+sb.auth.onAuthStateChange(async (event, session) => {
+  clearTimeout(_authTimeout);
+  if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
+    initApp(session);
+  }
+});
  
 function switchTab(t) {
   document.querySelectorAll('.auth-tab').forEach((b,i)=>b.classList.toggle('active',(t==='login'&&i===0)||(t==='register'&&i===1)));
@@ -791,7 +811,7 @@ async function savePlayers(){
 /* ══════════════════════════════════════
    HELPERS
 ══════════════════════════════════════ */
-function show(id){const e=document.getElementById(id);if(e)e.style.display=''}
+function show(id){const e=document.getElementById(id);if(e)e.style.display=(id==='app'?'block':id==='auth-screen'?'flex':'')}
 function hide(id){const e=document.getElementById(id);if(e)e.style.display='none'}
 function val(id){return(document.getElementById(id)||{}).value?.trim()||''}
 function showModal(html){document.getElementById('modal-body').innerHTML=html;show('modal')}
