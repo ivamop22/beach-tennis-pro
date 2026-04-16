@@ -8,12 +8,11 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
-            --bg-dark: #0A0F0A; /* Fundo escuro conforme imagem */
-            --green-bt: #63E678; /* Verde da imagem */
-            --gold-arena: #E5C163; /* Dourado Arena GWM */
+            --bg-dark: #0A0F0A; 
+            --green-bt: #63E678; 
+            --gold-arena: #E5C163; 
             --white: #FFFFFF;
             --card-bg: rgba(255, 255, 255, 0.05);
-            --ocean-blue: #00C2CB;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -26,7 +25,7 @@
             padding-bottom: 90px;
         }
 
-        /* HEADER ESTILO ARENA GWM */
+        /* HEADER ARENA GWM */
         .topbar {
             padding: 25px 20px;
             background: linear-gradient(to bottom, #0D140D, #0A0F0A);
@@ -40,29 +39,27 @@
 
         .title-top {
             font-weight: 800;
-            font-size: 26px;
-            letter-spacing: -0.5px;
-            line-height: 1;
+            font-size: 24px;
+            line-height: 1.1;
         }
         .title-top span { color: var(--green-bt); }
 
         .arena-name {
             font-weight: 700;
             color: var(--gold-arena);
-            font-size: 16px;
-            margin-top: 5px;
+            font-size: 15px;
+            margin-top: 4px;
             letter-spacing: 1px;
             text-transform: uppercase;
         }
 
         .slogan {
-            font-size: 11px;
+            font-size: 10px;
             color: rgba(255,255,255,0.4);
             margin-top: 8px;
             display: flex;
             align-items: center;
-            gap: 6px;
-            font-weight: 400;
+            gap: 5px;
         }
 
         /* CARDS E PLACAR */
@@ -79,7 +76,7 @@
             background: rgba(255,255,255,0.03);
             border-bottom: 1px solid rgba(255,255,255,0.05);
             font-family: 'JetBrains Mono', monospace;
-            font-size: 12px;
+            font-size: 11px;
             display: flex;
             justify-content: space-between;
         }
@@ -92,56 +89,59 @@
             text-align: center;
         }
 
-        .team-names { font-weight: 600; font-size: 14px; line-height: 1.4; }
-        .p-code { color: var(--green-bt); font-size: 11px; opacity: 0.8; }
+        .team-names { font-weight: 600; font-size: 14px; }
+        .p-code { color: var(--green-bt); font-size: 10px; display: block; }
 
-        .score-area { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+        .score-area { display: flex; flex-direction: column; align-items: center; gap: 8px; }
         .score-display {
             font-family: 'Anton', sans-serif;
-            font-size: 46px;
+            font-size: 42px;
             color: var(--white);
             background: #152015;
             padding: 5px 15px;
             border-radius: 10px;
             border: 1px solid var(--green-bt);
+            min-width: 90px;
         }
 
         .btn-score {
-            width: 35px; height: 35px;
+            width: 38px; height: 38px;
             border-radius: 50%; border: 1px solid rgba(255,255,255,0.2);
             background: rgba(255,255,255,0.05);
-            color: white; font-size: 18px; cursor: pointer;
+            color: white; font-size: 20px; cursor: pointer;
         }
 
         .btn-score:active { background: var(--green-bt); color: var(--bg-dark); }
 
-        /* NAV E BOTÕES */
+        /* NAV E ACTIONS */
         .nav {
             position: fixed; bottom: 15px; left: 15px; right: 15px;
-            background: rgba(20, 30, 20, 0.9);
+            background: rgba(20, 30, 20, 0.95);
             display: flex; justify-content: space-around;
             padding: 12px; border-radius: 20px;
             backdrop-filter: blur(10px); border: 1px solid rgba(99, 230, 120, 0.2);
         }
 
         .nav-btn {
-            background: none; border: none; color: rgba(255,255,255,0.5);
+            background: none; border: none; color: rgba(255,255,255,0.4);
             font-size: 10px; cursor: pointer; display: flex; flex-direction: column; align-items: center;
+            font-weight: 600;
         }
         .nav-btn.active { color: var(--green-bt); }
-        .nav-btn span { font-size: 20px; margin-bottom: 2px; }
+        .nav-btn span { font-size: 22px; margin-bottom: 2px; }
 
         .btn-action {
             background: var(--green-bt); color: var(--bg-dark);
-            padding: 16px; border-radius: 12px; border: none;
+            padding: 18px; border-radius: 15px; border: none;
             width: calc(100% - 30px); margin: 15px;
             font-weight: 800; text-transform: uppercase; cursor: pointer;
+            box-shadow: 0 4px 15px rgba(99, 230, 120, 0.2);
         }
 
         .stats-card { background: var(--card-bg); margin: 15px; padding: 20px; border-radius: 20px; }
         .stats-table { width: 100%; border-collapse: collapse; }
         .stats-table th { text-align: left; font-size: 11px; color: var(--green-bt); padding: 10px; }
-        .stats-table td { padding: 12px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 13px; }
+        .stats-table td { padding: 14px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
 
         .page { display: none; animation: fadeIn 0.3s; }
         .page.active { display: block; }
@@ -157,17 +157,17 @@
             <div class="arena-name">Arena GWM</div>
             <div class="slogan">⚡ Sistema de Chaveamento Inteligente</div>
         </div>
-        <button onclick="doLogout()" style="background:none; border:none; color:var(--green-bt); font-size:12px; font-weight:600;">SAIR</button>
+        <button onclick="doLogout()" style="background:none; border:none; color:var(--green-bt); font-size:11px; font-weight:700;">SAIR</button>
     </header>
 
     <div id="page-bracket" class="page active">
         <div id="games-list"></div>
-        <button class="btn-action" onclick="saveTournament()">💾 Salvar Resultados no Supabase</button>
+        <button class="btn-action" onclick="saveTournament()">💾 Salvar na Arena GWM</button>
     </div>
 
     <div id="page-ranking" class="page">
         <div class="stats-card">
-            <h2 style="font-family:'Anton'; margin-bottom:15px; letter-spacing:1px; color:var(--gold-arena);">🏆 RANKING GERAL</h2>
+            <h2 style="font-family:'Anton'; margin-bottom:15px; letter-spacing:1px; color:var(--gold-arena);">🏆 CLASSIFICAÇÃO</h2>
             <table class="stats-table">
                 <thead>
                     <tr>
@@ -185,17 +185,17 @@
     <nav class="nav">
         <button class="nav-btn active" onclick="goPage('bracket', this)"><span>🎾</span>JOGOS</button>
         <button class="nav-btn" onclick="goPage('ranking', this)"><span>🏆</span>RANKING</button>
-        <button class="nav-btn" onclick="location.reload()"><span>🔄</span>NOVO</button>
+        <button class="nav-btn" onclick="location.reload()"><span>🔄</span>LIMPAR</button>
     </nav>
 </div>
 
 <script>
-    // Substitua pelas suas credenciais reais do Supabase
+    // CREDENCIAIS SUPABASE ARENA GWM
     const SUPABASE_URL = 'https://mxjnydrllpxqwmfwzlsr.supabase.co';
-    const SUPABASE_KEY = 'SUA_KEY_AQUI'; 
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im14am55ZHJsbHB4cXdtZnd6bHNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNzYxNTcsImV4cCI6MjA5MTg1MjE1N30.eBjZuqVcEFnW4CZJQxvkPoaYH6vzoRdzcTTapoB21Cs'; 
     const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // Estado do App
+    // Dados Iniciais (Exemplo)
     let ST = {
         players: [
             { id: 1, nome: "Leonardo" },
@@ -228,7 +228,7 @@
                     </div>
                     <div class="score-area">
                         <div class="score-display">${g.score[0]}:${g.score[1]}</div>
-                        <div style="display:flex; gap:15px;">
+                        <div style="display:flex; gap:12px;">
                             <button class="btn-score" onclick="adj(${g.id},0,1)">+</button>
                             <button class="btn-score" onclick="adj(${g.id},1,1)">+</button>
                         </div>
@@ -248,7 +248,9 @@
         const g = ST.games.find(x => x.id === gid);
         if(!g) return;
         g.score[tIdx] = Math.max(0, g.score[tIdx] + d);
-        g.status = (g.score[0] >= 6 || g.score[1] >= 6) ? 'concluido' : 'andamento';
+        if (g.score[0] === 0 && g.score[1] === 0) g.status = 'aguardando';
+        else if (g.score[0] >= 6 || g.score[1] >= 6) g.status = 'concluido';
+        else g.status = 'andamento';
         renderGames();
     }
 
@@ -275,11 +277,28 @@
     }
 
     async function saveTournament() {
+        // Tenta pegar o usuário logado para associar o ID
         const { data: { user } } = await sb.auth.getUser();
-        if(!user) return alert("Por favor, faça login.");
-        const { error } = await sb.from('historico_torneios').insert([{ user_id: user.id, resultado_json: ST }]);
-        if(error) alert("Erro: " + error.message);
-        else alert("✅ Resultados salvos na Arena GWM!");
+        
+        const payload = { 
+            resultado_json: ST,
+            data_torneio: new Date().toISOString()
+        };
+
+        if(user) payload.user_id = user.id;
+
+        const { error } = await sb.from('historico_torneios').insert([payload]);
+        
+        if(error) {
+            console.error(error);
+            alert("Erro ao salvar: Verifique se a tabela 'historico_torneios' existe no Supabase.");
+        } else {
+            alert("✅ Torneio da Arena GWM salvo com sucesso!");
+        }
+    }
+
+    function doLogout() {
+        sb.auth.signOut().then(() => location.reload());
     }
 
     renderGames();
