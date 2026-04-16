@@ -312,29 +312,18 @@ const MAX_SEC=7200, VALID_N=[6,8,9,10,11,12];
 /* ══════════════════════════════════════
    AUTH
 ══════════════════════════════════════ */
-function initApp(session) {
+sb.auth.onAuthStateChange(async (event, session) => {
   hide('loading');
   if (session?.user) {
     currentUser = session.user;
     document.getElementById('user-display').textContent =
       session.user.user_metadata?.name || session.user.email;
     show('app'); hide('auth-screen');
-    buildCountGrid(); loadHistory();
+    buildCountGrid();
+    loadHistory();
   } else {
     currentUser = null;
     hide('app'); show('auth-screen');
-  }
-}
-const _t = setTimeout(() => { hide('loading'); show('auth-screen'); }, 5000);
-(async () => {
-  try {
-    const { data: { session } } = await sb.auth.getSession();
-    clearTimeout(_t); initApp(session);
-  } catch(e) { clearTimeout(_t); hide('loading'); show('auth-screen'); }
-})();
-sb.auth.onAuthStateChange((event, session) => {
-  if (['SIGNED_IN','SIGNED_OUT','TOKEN_REFRESHED'].includes(event)) {
-    clearTimeout(_t); initApp(session);
   }
 });
  
