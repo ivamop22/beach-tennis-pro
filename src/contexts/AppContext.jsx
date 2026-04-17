@@ -26,7 +26,8 @@ export function AppProvider({ children }) {
   const [playerSearch, setPlayerSearch] = useState('');
   const [newPlayerFormOpen, setNewPlayerFormOpen] = useState(false);
   const [roundHistoryFormOpen, setRoundHistoryFormOpen] = useState(false);
-  const [newPlayer, setNewPlayer] = useState({ nome: '', sobrenome: '', idade: '' });
+  const [newPlayer, setNewPlayer] = useState({ nome: '', sobrenome: '', data_nascimento: '' });
+  const [editingPlayer, setEditingPlayer] = useState(null);
   const [state, setState] = useState({
     playerCount: 0,
     players: [],
@@ -42,33 +43,21 @@ export function AppProvider({ children }) {
 
   useEffect(() => {
     let mounted = true;
-
     async function loadSession() {
       try {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-
+        const { data: { session } } = await supabase.auth.getSession();
         if (!mounted) return;
         setUser(session?.user || null);
       } finally {
         if (mounted) setLoadingAuth(false);
       }
     }
-
     loadSession();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user || null);
       setLoadingAuth(false);
     });
-
-    return () => {
-      mounted = false;
-      subscription.unsubscribe();
-    };
+    return () => { mounted = false; subscription.unsubscribe(); };
   }, []);
 
   const loadDbPlayers = useCallback(async () => {
@@ -141,7 +130,7 @@ export function AppProvider({ children }) {
         code: `J${index + 1}`,
         nome: player.nome || '',
         sobrenome: player.sobrenome || '',
-        idade: player.idade || '',
+        data_nascimento: player.data_nascimento || '',
         dbId: player.id || player.dbId || null,
       };
       return { ...current, players: nextPlayers };
@@ -156,7 +145,7 @@ export function AppProvider({ children }) {
         code: `J${index + 1}`,
         nome: '',
         sobrenome: '',
-        idade: '',
+        data_nascimento: '',
         dbId: null,
       };
       return { ...current, players: nextPlayers };
@@ -168,33 +157,62 @@ export function AppProvider({ children }) {
       toastMessage('⚠️ Nome é obrigatório.');
       return;
     }
-
     const { data, error } = await supabase
       .from('players')
-      .insert([
-        {
-          user_id: user.id,
-          nome: newPlayer.nome.trim(),
-          sobrenome: newPlayer.sobrenome.trim(),
-          idade: newPlayer.idade ? parseInt(newPlayer.idade, 10) : null,
-          updated_at: new Date().toISOString(),
-        },
-      ])
+      .insert([{
+        user_id: user.id,
+        nome: newPlayer.nome.trim(),
+        sobrenome: newPlayer.sobrenome.trim(),
+        data_nascimento: newPlayer.data_nascimento || null,
+        updated_at: new Date().toISOString(),
+      }])
       .select()
       .single();
-
-    if (error) {
-      toastMessage(`❌ ${error.message}`);
-      return;
-    }
-
+    if (error) { toastMessage(`❌ ${error.message}`); return; }
     setDbPlayers((current) => [...current, data].sort((a, b) => (a.nome || '').localeCompare(b.nome || '')));
     if (selectedSlot !== null) assignPlayerToSlot(selectedSlot, data);
     setSelectedSlot(null);
     setNewPlayerFormOpen(false);
-    setNewPlayer({ nome: '', sobrenome: '', idade: '' });
+    setNewPlayer({ nome: '', sobrenome: '', data_nascimento: '' });
     toastMessage(`✅ ${data.nome} cadastrado e selecionado!`);
   }, [assignPlayerToSlot, newPlayer, selectedSlot, toastMessage, user]);
+
+  // Editar jogador existente
+  const updatePlayer = useCallback(async (id, updates) => {
+    if (!user) return;
+    const { data, error } = await supabase
+      .from('players')
+      .update({ ...updates, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .eq('user_id', user.id)
+      .select()
+      .single();
+    if (error) { toastMessage(`❌ ${error.message}`); return; }
+    setDbPlayers((current) =>
+      current.map((p) => (p.id === id ? data : p)).sort((a, b) => (a.nome || '').localeCompare(b.nome || ''))
+    );
+    setEditingPlayer(null);
+    toastMessage(`✅ ${data.nome} atualizado com sucesso!`);
+  }, [user, toastMessage]);
+
+  // Excluir jogador
+  const deletePlayer = useCallback(async (id) => {
+    if (!user) return;
+    const { error } = await supabase.from('players').delete().eq('id', id).eq('user_id', user.id);
+    if (error) { toastMessage(`❌ ${error.message}`); return; }
+    setDbPlayers((current) => current.filter((p) => p.id !== id));
+    toastMessage('🗑️ Jogador excluído com sucesso!');
+  }, [user, toastMessage]);
+
+  // Excluir torneio
+  const deleteRound = useCallback(async (roundId) => {
+    if (!user) return;
+    const { error } = await supabase.from('rounds').delete().eq('id', roundId).eq('user_id', user.id);
+    if (error) { toastMessage(`❌ ${error.message}`); return; }
+    setRounds((current) => current.filter((r) => r.id !== roundId));
+    toastMessage('🗑️ Torneio excluído com sucesso!');
+    loadGlobalRanking();
+  }, [user, toastMessage, loadGlobalRanking]);
 
   const loadAllSavedPlayers = useCallback(async () => {
     await loadDbPlayers();
@@ -206,7 +224,7 @@ export function AppProvider({ children }) {
           code: `J${index + 1}`,
           nome: player.nome || '',
           sobrenome: player.sobrenome || '',
-          idade: player.idade || '',
+          data_nascimento: player.data_nascimento || '',
           dbId: player.id,
         };
       });
@@ -216,70 +234,65 @@ export function AppProvider({ children }) {
   }, [dbPlayers, loadDbPlayers, state.playerCount, toastMessage]);
 
   const generateTournament = useCallback(() => {
-    if (!state.playerCount) {
-      toastMessage('⚠️ Selecione o número de jogadores.');
-      return;
-    }
-
+    if (!state.playerCount) { toastMessage('⚠️ Selecione o número de jogadores.'); return; }
     const normalizedPlayers = state.players.map((player, index) =>
       player.nome ? player : { ...player, nome: `Jogador${index + 1}` },
     );
-
     const games = generateTournamentGames(state.playerCount);
-    if (!games) {
-      toastMessage('❌ Não foi possível gerar o chaveamento.');
-      return;
-    }
-
-    setState({
-      playerCount: state.playerCount,
-      players: normalizedPlayers,
-      games,
-      active: true,
-    });
+    if (!games) { toastMessage('❌ Não foi possível gerar o chaveamento.'); return; }
+    setState({ playerCount: state.playerCount, players: normalizedPlayers, games, active: true });
     setTimerRunning(false);
     setTimerSeconds(0);
     setActivePage('bracket');
   }, [state, toastMessage]);
 
+  // Permite alterar resultado de partida já concluída
   const updateGameScore = useCallback((gameId, teamIndex, delta) => {
     setState((current) => {
       const games = current.games.map((game) => {
-        if (game.id !== gameId || game.status === 'concluido') return game;
+        if (game.id !== gameId) return game;
         const score = [...game.score];
         const nextValue = score[teamIndex] + delta;
         if (nextValue < 0 || nextValue > 4) return game;
         if (nextValue === 4 && score[1 - teamIndex] === 4) return game;
         score[teamIndex] = nextValue;
-
         let status = game.status;
         if (score[0] > 0 || score[1] > 0) status = 'andamento';
         if ((score[0] === 4 || score[1] === 4) && score[0] !== score[1]) status = 'concluido';
-
         return { ...game, score, status };
       });
       return { ...current, games };
     });
   }, []);
 
+  // Reabrir partida concluída para edição
+  const reopenGame = useCallback((gameId) => {
+    setState((current) => {
+      const games = current.games.map((game) => {
+        if (game.id !== gameId || game.status !== 'concluido') return game;
+        return { ...game, status: 'andamento' };
+      });
+      return { ...current, games };
+    });
+    toastMessage('🔓 Partida reaberta para edição!');
+  }, [toastMessage]);
+
   const stats = useMemo(() => calculateStats(state.players, state.games), [state.players, state.games]);
   const currentRanking = useMemo(() => sortCurrentRanking(stats), [stats]);
 
   const saveRound = useCallback(async () => {
     if (!user) return;
-
-    const name = roundName.trim() || `Rodada ${new Date().toLocaleDateString('pt-BR')}`;
+    const today = new Date().toLocaleDateString('pt-BR');
+    const name = roundName.trim() || `Torneio do dia ${today}`;
     const players = stats.map((player, index) => ({
       player_index: index + 1,
       nome: player.nome.replace(/\.$/, '').trim(),
       sobrenome: state.players[index]?.sobrenome || '',
-      idade: parseInt(state.players[index]?.idade, 10) || null,
       jogos: player.jogos,
       vitorias: player.vit,
       games_pro: player.gp,
       games_contra: player.gc,
     }));
-
     const games = state.games.map((game) => ({
       game_number: game.id,
       t1p1: game.teams[0][0],
@@ -290,7 +303,6 @@ export function AppProvider({ children }) {
       score2: game.score[1],
       status: game.status,
     }));
-
     const { error } = await supabase.rpc('save_round', {
       p_user_id: user.id,
       p_name: name,
@@ -299,64 +311,30 @@ export function AppProvider({ children }) {
       p_players: players,
       p_games: games,
     });
-
-    if (error) {
-      toastMessage(`❌ Erro ao salvar: ${error.message}`);
-      return;
-    }
-
+    if (error) { toastMessage(`❌ Erro ao salvar: ${error.message}`); return; }
     setSaveModalOpen(false);
     setRoundName('');
-    toastMessage('✅ Rodada salva com sucesso!');
+    toastMessage('✅ Torneio salvo com sucesso!');
     loadHistory();
     loadGlobalRanking();
   }, [loadGlobalRanking, loadHistory, roundName, state.games, state.playerCount, state.players, stats, timerSeconds, toastMessage, user]);
 
   const value = {
-    user,
-    loadingAuth,
-    activePage,
-    setActivePage,
-    toast,
-    toastMessage,
-    dbPlayers,
-    rounds,
-    globalRanking,
-    timerSeconds,
-    setTimerSeconds,
-    timerRunning,
-    setTimerRunning,
-    saveModalOpen,
-    setSaveModalOpen,
-    roundName,
-    setRoundName,
-    selectedSlot,
-    setSelectedSlot,
-    playerSearch,
-    setPlayerSearch,
-    newPlayerFormOpen,
-    setNewPlayerFormOpen,
-    newPlayer,
-    setNewPlayer,
-    state,
-    stats,
-    currentRanking,
-    login,
-    register,
-    logout,
-    selectPlayerCount,
-    assignPlayerToSlot,
-    removeSlot,
-    registerNewPlayer,
-    loadDbPlayers,
-    loadAllSavedPlayers,
-    generateTournament,
-    updateGameScore,
-    saveRound,
-    loadHistory,
-    loadGlobalRanking,
-    roundHistoryFormOpen,
-    setRoundHistoryFormOpen
+    user, loadingAuth, activePage, setActivePage, toast, toastMessage,
+    dbPlayers, rounds, globalRanking,
+    timerSeconds, setTimerSeconds, timerRunning, setTimerRunning,
+    saveModalOpen, setSaveModalOpen, roundName, setRoundName,
+    selectedSlot, setSelectedSlot, playerSearch, setPlayerSearch,
+    newPlayerFormOpen, setNewPlayerFormOpen, newPlayer, setNewPlayer,
+    editingPlayer, setEditingPlayer,
+    state, stats, currentRanking,
+    login, register, logout,
+    selectPlayerCount, assignPlayerToSlot, removeSlot,
+    registerNewPlayer, updatePlayer, deletePlayer, deleteRound,
+    loadDbPlayers, loadAllSavedPlayers, generateTournament,
+    updateGameScore, reopenGame, saveRound,
+    loadHistory, loadGlobalRanking,
+    roundHistoryFormOpen, setRoundHistoryFormOpen,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
