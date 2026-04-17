@@ -16,6 +16,7 @@ export default function BracketPage() {
     setTimerRunning,
     setActivePage,
     updateGameScore,
+    reopenGame,
     setSaveModalOpen,
   } = useAppContext();
 
@@ -30,7 +31,7 @@ export default function BracketPage() {
         <div className="rodada-info-row">
           <button className="btn btn-ghost btn-sm" onClick={() => setActivePage('setup')}><i className="fa fa-arrow-left"></i> Voltar</button>
           {state.games.length ? (
-            <button className="btn btn-green btn-sm" onClick={() => setSaveModalOpen(true)}><i className="fa fa-save"></i> Salvar Rodada</button>
+            <button className="btn btn-green btn-sm" onClick={() => setSaveModalOpen(true)}><i className="fa fa-save"></i> Salvar Torneio</button>
           ) : null}
         </div>
       </div>
@@ -44,9 +45,8 @@ export default function BracketPage() {
           </div>
           <button className="btn btn-ghost btn-sm" onClick={() => setTimerRunning((current) => !current)}>
             {timerRunning
-                ? (<><i className="fa fa-pause"></i> Pausar</>)
-                : (<><i className="fa fa-play"></i> Iniciar</>)
-            }
+              ? (<><i className="fa fa-pause"></i> Pausar</>)
+              : (<><i className="fa fa-play"></i> Iniciar</>)}
           </button>
         </div>
       ) : null}
@@ -85,7 +85,16 @@ export default function BracketPage() {
 
                   <div className="score-area">
                     {scoreDone ? (
-                      <div className="score-display">{game.score[0]}×{game.score[1]}</div>
+                      <div style={{ textAlign: 'center' }}>
+                        <div className="score-display">{game.score[0]}×{game.score[1]}</div>
+                        <button
+                          className="btn btn-ghost btn-sm"
+                          style={{ marginTop: '6px', fontSize: '11px' }}
+                          onClick={() => reopenGame(game.id)}
+                        >
+                          <i className="fa fa-edit"></i> Alterar
+                        </button>
+                      </div>
                     ) : (
                       <div className="score-inputs">
                         {[0, 1].map((teamIndex) => (

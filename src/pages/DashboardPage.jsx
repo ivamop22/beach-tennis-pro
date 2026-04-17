@@ -1,4 +1,5 @@
 import { useAppContext } from '../contexts/AppContext';
+import { useTournamentTimer } from '../hooks/useTournamentTimer';
 import Topbar from '../components/Topbar';
 import Navigation from '../components/Navigation';
 import SetupPage from './SetupPage';
@@ -6,6 +7,7 @@ import BracketPage from './BracketPage';
 import StatsPage from './StatsPage';
 import RankingPage from './RankingPage';
 import HistoryPage from './HistoryPage';
+import PlayersPage from './PlayersPage';
 import PlayerSelectModal from '../components/PlayerSelectModal';
 
 export default function DashboardPage() {
@@ -20,6 +22,7 @@ export default function DashboardPage() {
       {activePage === 'stats' && <StatsPage />}
       {activePage === 'ranking' && <RankingPage />}
       {activePage === 'history' && <HistoryPage />}
+      {activePage === 'players' && <PlayersPage />}
       <PlayerSelectModal />
     </div>
   );

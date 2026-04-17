@@ -6,6 +6,7 @@ const pages = [
   ['stats', 'Estatísticas', 'fa fa-chart-bar'],
   ['ranking', 'Ranking', 'fa fa-trophy'],
   ['history', 'Histórico', 'fa fa-history'],
+  ['players', 'Jogadores', 'fa fa-users'],
 ];
 
 export default function Navigation() {
@@ -13,11 +14,14 @@ export default function Navigation() {
   return (
     <nav className="nav">
       {pages.map(([key, label, iconName]) => (
-          <button key={key} className={`nav-btn ${activePage === key ? 'active' : ''}`}
-                  onClick={() => setActivePage(key)}>
-            <i className={iconName}></i>
-            {label}
-          </button>
+        <button
+          key={key}
+          className={`nav-btn ${activePage === key ? 'active' : ''}`}
+          onClick={() => setActivePage(key)}
+        >
+          <i className={iconName}></i>
+          {label}
+        </button>
       ))}
     </nav>
   );
