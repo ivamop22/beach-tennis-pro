@@ -30,6 +30,16 @@ export default function PlayerSelectModal() {
 
   const usedIds = new Set(state.players.filter((player) => player.dbId).map((player) => player.dbId));
 
+  function calcIdade(dataNascimento) {
+    if (!dataNascimento) return null;
+    const hoje = new Date();
+    const nasc = new Date(dataNascimento);
+    let idade = hoje.getFullYear() - nasc.getFullYear();
+    const m = hoje.getMonth() - nasc.getMonth();
+    if (m < 0 || (m === 0 && hoje.getDate() < nasc.getDate())) idade--;
+    return idade;
+  }
+
   return (
     <div className="player-select-modal" onClick={() => setSelectedSlot(null)}>
       <div className="player-select-box" onClick={(e) => e.stopPropagation()}>
@@ -47,6 +57,7 @@ export default function PlayerSelectModal() {
               Nenhum jogador encontrado.</div>
           ) : filteredPlayers.map((player) => {
             const inUse = usedIds.has(player.id) && state.players[selectedSlot]?.dbId !== player.id;
+            const idade = calcIdade(player.data_nascimento);
             return (
                 <div className="db-player-item" onClick={() => {
                   assignPlayerToSlot(selectedSlot, player);
@@ -58,8 +69,12 @@ export default function PlayerSelectModal() {
                      data-pid={player.id}>
                   <div>
                     <div className="p-name">{player.nome}{player.sobrenome ? ` ${player.sobrenome}` : ''}</div>
-                    <div
-                        className="p-meta">{player.idade ? `${player.idade} anos` : 'Sem idade'} {inUse ? '· Em uso' : ''}</div>
+                    <div className="p-meta">
+                      {player.data_nascimento
+                        ? `${idade} anos · Nasc: ${new Date(player.data_nascimento).toLocaleDateString('pt-BR')}`
+                        : 'Sem data de nascimento'}
+                      {inUse ? ' · Em uso' : ''}
+                    </div>
                     <i className="fa fa-check-circle check-icon"></i>
                   </div>
                 </div>
@@ -68,7 +83,6 @@ export default function PlayerSelectModal() {
         </div>
 
         <div className="register-new-section">
-
           <div className={`register-new-toggle ${newPlayerFormOpen ? 'open' : ''}`} onClick={() => setNewPlayerFormOpen((current) => !current)}>
             <i className="fa fa-user-plus"></i>
             Cadastrar novo jogador
@@ -83,16 +97,19 @@ export default function PlayerSelectModal() {
                          onChange={(e) => setNewPlayer({...newPlayer, sobrenome: e.target.value})}/>
                 </div>
                 <div className="row">
-                  <input placeholder="Idade" value={newPlayer.idade}
-                         onChange={(e) => setNewPlayer({...newPlayer, idade: e.target.value})}
-                         className="max-width-100px"/>
-                  <button className="btn btn-gold flex1-justify-content-center" onClick={registerNewPlayer}><i className="fa fa-save"></i> Salvar e
-                    Selecionar
+                  <label style={{fontSize:'12px', color:'#aaa', marginRight:'4px'}}>Data de Nasc.</label>
+                  <input
+                    type="date"
+                    value={newPlayer.data_nascimento}
+                    onChange={(e) => setNewPlayer({...newPlayer, data_nascimento: e.target.value})}
+                    className="max-width-160px"
+                  />
+                  <button className="btn btn-gold flex1-justify-content-center" onClick={registerNewPlayer}>
+                    <i className="fa fa-save"></i> Salvar e Selecionar
                   </button>
                 </div>
               </div>
-          ) : null
-          }
+          ) : null}
         </div>
 
         <div className="psel-actions">
