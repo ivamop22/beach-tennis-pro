@@ -3,16 +3,16 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 
 export default defineConfig({
+    base: '/beach-tennis-pro/',
     plugins: [
-    react(),
+        react(),
     ],
     resolve: {
-    alias: {
-      // Alias @ to the src directory
-      '@': path.resolve(__dirname, './src'),
+        alias: {
+            // Alias @ to the src directory
+            '@': path.resolve(__dirname, './src'),
+        },
     },
-    },
-    base: '/beach-tennis-pro/',
     // File types to support raw imports. Never add .css, .tsx, or .ts files to this.
     assetsInclude: ['**/*.svg', '**/*.csv'],
 });
